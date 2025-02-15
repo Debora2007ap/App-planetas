@@ -1,216 +1,351 @@
+main.dart
+
+// ignore: unused_import
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:myapp/controles/controle_planeta.dart';
+import 'package:myapp/telas/tela_planeta.dart';
+
+// ignore: unused_import
+import 'modelos/planeta.dart';
 
 void main() {
-  runApp(MeuAplicativo());
+  runApp(const MyApp());
 }
 
-class MeuAplicativo extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gerenciador de Planetas',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: TelaListaPlanetas(),
+      title: 'Planetas',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 255, 39, 183),
+        ),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(title: 'App - Planetas'),
     );
   }
 }
 
-class BancoDeDados {
-  static final BancoDeDados _instancia = BancoDeDados._interno();
-  factory BancoDeDados() => _instancia;
-  BancoDeDados._interno();
-  Database? _banco;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
 
-  Future<Database> get banco async {
-    if (_banco != null) return _banco!;
-    _banco = await _inicializarBanco();
-    return _banco!;
-  }
+  final String title;
 
-  Future<Database> _inicializarBanco() async {
-    String caminho = join(await getDatabasesPath(), 'planetas.db');
-    return openDatabase(
-      caminho,
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE planetas(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            distancia REAL NOT NULL,
-            tamanho REAL NOT NULL,
-            apelido TEXT
-          )
-        ''');
-      },
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> obterPlanetas() async {
-    final db = await banco;
-    return db.query('planetas');
-  }
-
-  Future<int> inserirPlaneta(Map<String, dynamic> planeta) async {
-    final db = await banco;
-    return db.insert('planetas', planeta);
-  }
-
-  Future<int> atualizarPlaneta(Map<String, dynamic> planeta) async {
-    final db = await banco;
-    return db.update('planetas', planeta, where: 'id = ?', whereArgs: [planeta['id']]);
-  }
-
-  Future<int> excluirPlaneta(int id) async {
-    final db = await banco;
-    return db.delete('planetas', where: 'id = ?', whereArgs: [id]);
-  }
-}
-
-class TelaListaPlanetas extends StatefulWidget {
   @override
-  _TelaListaPlanetasEstado createState() => _TelaListaPlanetasEstado();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _TelaListaPlanetasEstado extends State<TelaListaPlanetas> {
-  final BancoDeDados banco = BancoDeDados();
-  List<Map<String, dynamic>> planetas = [];
+class _MyHomePageState extends State<MyHomePage> {
+  final ControlePlaneta _controlePlaneta = ControlePlaneta();
+  List<Planeta> _planetas = [];
 
   @override
   void initState() {
     super.initState();
-    _carregarPlanetas();
+    _lerPlanetas();
   }
 
-  void _carregarPlanetas() async {
-    final dados = await banco.obterPlanetas();
+  Future<void> _lerPlanetas() async {
+    final resultado = await _controlePlaneta.lerPlanetas();
     setState(() {
-      planetas = dados;
+      _planetas = resultado;
     });
   }
 
-  void _excluirPlaneta(int id) async {
-    await banco.excluirPlaneta(id);
-    _carregarPlanetas();
+  void _incluirPlaneta(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => TelaPlaneta(
+              onFinalizado: () {
+                _lerPlanetas();
+              },
+            ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Planetas')),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
+      ),
       body: ListView.builder(
-        itemCount: planetas.length,
+        itemCount: _planetas.length,
         itemBuilder: (context, index) {
-          final planeta = planetas[index];
+          final planeta = _planetas[index];
           return ListTile(
-            title: Text(planeta['nome']),
-            subtitle: Text(planeta['apelido'] ?? 'Sem apelido'),
-            trailing: IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _excluirPlaneta(planeta['id']),
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TelaFormularioPlaneta(
-                    planeta: planeta,
-                    aoSalvar: _carregarPlanetas,
-                  ),
-                ),
-              );
-            },
+            title: Text(planeta.nome),
+            subtitle: Text(planeta.distancia.toString()),
           );
         },
       ),
+
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TelaFormularioPlaneta(
-                aoSalvar: _carregarPlanetas,
-              ),
-            ),
-          );
+          _incluirPlaneta(context);
         },
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-class TelaFormularioPlaneta extends StatefulWidget {
-  final Map<String, dynamic>? planeta;
-  final VoidCallback aoSalvar;
+tela_planeta
 
-  TelaFormularioPlaneta({this.planeta, required this.aoSalvar});
+
+import 'package:flutter/material.dart';
+import '../controles/controle_planeta.dart';
+import '../modelos/planeta.dart';
+
+class TelaPlaneta extends StatefulWidget {
+  final Function() onFinalizado;
+
+  const TelaPlaneta({super.key, required this.onFinalizado});
 
   @override
-  _TelaFormularioPlanetaEstado createState() => _TelaFormularioPlanetaEstado();
+  State<TelaPlaneta> createState() => _TelaPlanetaState();
 }
 
-class _TelaFormularioPlanetaEstado extends State<TelaFormularioPlaneta> {
-  final _chaveFormulario = GlobalKey<FormState>();
-  final BancoDeDados banco = BancoDeDados();
+class _TelaPlanetaState extends State<TelaPlaneta> {
+  final _formKey = GlobalKey<FormState>();
 
-  late String nome;
-  late double distancia;
-  late double tamanho;
-  String? apelido;
+  final TextEditingController _nomeController = TextEditingController();
+  final TextEditingController _tamanhoController = TextEditingController();
+  final TextEditingController _distanciaController = TextEditingController();
+  final TextEditingController _apelidoController = TextEditingController();
+
+  final ControlePlaneta _controlePlaneta = ControlePlaneta();
+
+  final Planeta _planeta = Planeta.vazio();
 
   @override
   void initState() {
+    //_nomeController.text = 'Terra nova';
+    //_tamanhoController.text = '100.0';
+    //_distanciaController.text = '1000.0';
+    //_apelidoController.text = 'Terra nova';
     super.initState();
-    nome = widget.planeta?['nome'] ?? '';
-    distancia = widget.planeta?['distancia']?.toDouble() ?? 0.0;
-    tamanho = widget.planeta?['tamanho']?.toDouble() ?? 0.0;
-    apelido = widget.planeta?['apelido'];
   }
 
-  void _salvarPlaneta() async {
-    if (_chaveFormulario.currentState!.validate()) {
-      _chaveFormulario.currentState!.save();
-      final planeta = {
-        'nome': nome,
-        'distancia': distancia,
-        'tamanho': tamanho,
-        'apelido': apelido,
-      };
-      if (widget.planeta == null) {
-        await banco.inserirPlaneta(planeta);
-      } else {
-        planeta['id'] = widget.planeta!['id'];
-        await banco.atualizarPlaneta(planeta);
-      }
-      widget.aoSalvar();
-      Navigator.pop(context);
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _tamanhoController.dispose();
+    _distanciaController.dispose();
+    _apelidoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _inserirPlaneta() async {
+    await _controlePlaneta.inserirPlaneta(_planeta);
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      _inserirPlaneta();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dados do planeta salvos com sucesso!')),
+      );
+      Navigator.of(context).pop();
+      widget.onFinalizado();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.planeta == null ? 'Novo Planeta' : 'Editar Planeta')),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Cadastrar Planeta'),
+        elevation: 3,
+        backgroundColor: const Color.fromARGB(255, 255, 159, 226),
+      ),
+
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
         child: Form(
-          key: _chaveFormulario,
-          child: Column(
-            children: [
-              TextFormField(
-                initialValue: nome,
-                decoration: InputDecoration(labelText: 'Nome'),
-                onSaved: (valor) => nome = valor!,
-                validator: (valor) => valor!.isEmpty ? 'Campo obrigatório' : null,
-              ),
-              ElevatedButton(onPressed: _salvarPlaneta, child: Text('Salvar')),
-            ],
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _nomeController,
+                  decoration: const InputDecoration(labelText: 'Nome'),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || value.length < 3) {
+                      return 'Por favor, informe o nome do planeta (3 ou mais caracteres)';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _planeta.nome = value!;
+                  },
+                ),
+                TextFormField(
+                  controller: _tamanhoController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tamanho (em km)',
+                  ),
+                  keyboardType: TextInputType.number,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, informe o tamanho do planeta';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Por favor, informe um valor numérico válido';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _planeta.tamanho = double.parse(value!);
+                  },
+                ),
+                TextFormField(
+                  controller: _distanciaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Distância (em km)',
+                  ),
+                  keyboardType: TextInputType.number,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, informe a distância do planeta';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Por favor, informe um valor numérico válido';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _planeta.distancia = double.parse(value!);
+                  },
+                ),
+                TextFormField(
+                  controller: _apelidoController,
+                  decoration: const InputDecoration(labelText: 'Apelido'),
+                  onSaved: (value) {
+                    _planeta.apelido = value;
+                  },
+                ),
+
+                const SizedBox(height: 20.0),
+                ElevatedButton(
+                  onPressed: _submitForm, //_submitForm,
+                  child: Text('Salvar'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+planeta.dart
+
+
+class Planeta {
+  int? id;
+  String nome;
+  double tamanho;
+  double distancia;
+  String? apelido;
+
+// Construtor da classe Planeta
+  Planeta({
+    this.id,
+    required this.nome,
+    required this.tamanho,
+    required this.distancia,
+    this.apelido,
+  });
+
+//Construtor alternativo
+  Planeta.vazio()
+      : nome = '',
+        tamanho = 0.0,
+        distancia = 0.0,
+        apelido = '';
+
+factory Planeta.fromMap(Map<String, dynamic> map) {
+    return Planeta (
+      id: map['id'],
+      nome: map['nome'],
+      tamanho: map['tamanho'],
+      distancia: map['distancia'],
+      apelido: map['apelido'],
+    );
+  }
+
+    Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nome': nome,
+      'tamanho': tamanho,
+      'distancia': distancia,
+      'apelido': apelido,
+    };
+  }
+}
+controle_planeta
+
+import 'package:myapp/modelos/planeta.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+class ControlePlaneta {
+  static Database? _bd;
+
+  Future<Database> get bd async {
+    if (_bd == null) return _bd!;
+    _bd = await _initBD('planetas.db');
+    return _bd!;
+  }
+
+  Future<Database> _initBD(String localArquivo) async {
+    final caminhoBD = await getDatabasesPath();
+    final caminho = join(caminhoBD, localArquivo);
+    return await openDatabase(caminho, version: 1, onCreate: _criarBD);
+  }
+
+  Future<void> _criarBD(Database bd, int versao) async {
+    const sql = '''
+      CREATE TABLE planetas(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        tamanho REAL NOT NULL,
+        distancia REAL NOT NULL,
+        apelido TEXT
+      );
+    ''';
+    await bd.execute(sql);
+  }
+
+  Future<List<Planeta>> lerPlanetas() async {
+    final db = await bd;
+    final resultado = await db.query('planetas');
+    return resultado.map((item) => Planeta.fromMap(item)).toList();
+  }
+
+  Future<int> inserirPlaneta(Planeta planeta) async {
+    final db = await bd;
+    return await db.insert('planetas', planeta.toMap());
   }
 }
