@@ -1,351 +1,202 @@
-main.dart
+main.dart 
 
-// ignore: unused_import
-import 'dart:ffi';
+// ignore: unused_import import 'dart:ffi'; 
 
-import 'package:flutter/material.dart';
-import 'package:myapp/controles/controle_planeta.dart';
-import 'package:myapp/telas/tela_planeta.dart';
+import 'package:flutter/material.dart'; import 'package:myapp/controles/controle_planeta.dart'; import 'package:myapp/telas/tela_planeta.dart'; 
 
-// ignore: unused_import
-import 'modelos/planeta.dart';
+// ignore: unused_import import 'modelos/planeta.dart'; 
 
-void main() {
-  runApp(const MyApp());
-}
+void main() { runApp(const MyApp()); } 
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget { const MyApp({super.key}); 
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Planetas',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 255, 39, 183),
-        ),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'App - Planetas'),
-    );
-  }
-}
+// This widget is the root of your application. @override Widget build(BuildContext context) { return MaterialApp( title: 'Planetas', theme: ThemeData( colorScheme: ColorScheme.fromSeed( seedColor: const Color.fromARGB(255, 255, 39, 183), ), useMaterial3: true, ), home: const MyHomePage(title: 'App - Planetas'), ); } } 
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MyHomePage extends StatefulWidget { const MyHomePage({super.key, required this.title}); 
 
-  final String title;
+final String title; 
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+@override State createState() => _MyHomePageState(); } 
 
-class _MyHomePageState extends State<MyHomePage> {
-  final ControlePlaneta _controlePlaneta = ControlePlaneta();
-  List<Planeta> _planetas = [];
+class _MyHomePageState extends State { final ControlePlaneta _controlePlaneta = ControlePlaneta(); List _planetas = []; 
 
-  @override
-  void initState() {
-    super.initState();
-    _lerPlanetas();
-  }
+@override void initState() { super.initState(); _lerPlanetas(); } 
 
-  Future<void> _lerPlanetas() async {
-    final resultado = await _controlePlaneta.lerPlanetas();
-    setState(() {
-      _planetas = resultado;
-    });
-  }
+Future _lerPlanetas() async { final resultado = await _controlePlaneta.lerPlanetas(); setState(() { _planetas = resultado; }); } 
 
-  void _incluirPlaneta(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => TelaPlaneta(
-              onFinalizado: () {
-                _lerPlanetas();
-              },
-            ),
-      ),
-    );
-  }
+void _incluirPlaneta(BuildContext context) { Navigator.push( context, MaterialPageRoute( builder: (context) => TelaPlaneta( onFinalizado: () { _lerPlanetas(); }, ), ), ); } 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: ListView.builder(
-        itemCount: _planetas.length,
-        itemBuilder: (context, index) {
-          final planeta = _planetas[index];
-          return ListTile(
-            title: Text(planeta.nome),
-            subtitle: Text(planeta.distancia.toString()),
-          );
-        },
-      ),
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar( backgroundColor: Theme.of(context).colorScheme.inversePrimary, title: Text(widget.title), ), body: ListView.builder( itemCount: _planetas.length, itemBuilder: (context, index) { final planeta = _planetas[index]; return ListTile( title: Text(planeta.nome), subtitle: Text(planeta.distancia.toString()), ); }, ), 
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _incluirPlaneta(context);
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
+ floatingActionButton: FloatingActionButton( 
+    onPressed: () { 
+      _incluirPlaneta(context); 
+    }, 
+    child: const Icon(Icons.add), 
+  ), 
+); 
+  
 
-tela_planeta
+} } 
 
+tela_planeta 
 
-import 'package:flutter/material.dart';
-import '../controles/controle_planeta.dart';
-import '../modelos/planeta.dart';
+import 'package:flutter/material.dart'; import '../controles/controle_planeta.dart'; import '../modelos/planeta.dart'; 
 
-class TelaPlaneta extends StatefulWidget {
-  final Function() onFinalizado;
+class TelaPlaneta extends StatefulWidget { final Function() onFinalizado; 
 
-  const TelaPlaneta({super.key, required this.onFinalizado});
+const TelaPlaneta({super.key, required this.onFinalizado}); 
 
-  @override
-  State<TelaPlaneta> createState() => _TelaPlanetaState();
-}
+@override State createState() => _TelaPlanetaState(); } 
 
-class _TelaPlanetaState extends State<TelaPlaneta> {
-  final _formKey = GlobalKey<FormState>();
+class _TelaPlanetaState extends State { final _formKey = GlobalKey(); 
 
-  final TextEditingController _nomeController = TextEditingController();
-  final TextEditingController _tamanhoController = TextEditingController();
-  final TextEditingController _distanciaController = TextEditingController();
-  final TextEditingController _apelidoController = TextEditingController();
+final TextEditingController _nomeController = TextEditingController(); final TextEditingController _tamanhoController = TextEditingController(); final TextEditingController _distanciaController = TextEditingController(); final TextEditingController _apelidoController = TextEditingController(); 
 
-  final ControlePlaneta _controlePlaneta = ControlePlaneta();
+final ControlePlaneta _controlePlaneta = ControlePlaneta(); 
 
-  final Planeta _planeta = Planeta.vazio();
+final Planeta _planeta = Planeta.vazio(); 
 
-  @override
-  void initState() {
-    //_nomeController.text = 'Terra nova';
-    //_tamanhoController.text = '100.0';
-    //_distanciaController.text = '1000.0';
-    //_apelidoController.text = 'Terra nova';
-    super.initState();
-  }
+@override void initState() { //_nomeController.text = 'Terra nova'; //_tamanhoController.text = '100.0'; //_distanciaController.text = '1000.0'; //_apelidoController.text = 'Terra nova'; super.initState(); } 
 
-  @override
-  void dispose() {
-    _nomeController.dispose();
-    _tamanhoController.dispose();
-    _distanciaController.dispose();
-    _apelidoController.dispose();
-    super.dispose();
-  }
+@override void dispose() { _nomeController.dispose(); _tamanhoController.dispose(); _distanciaController.dispose(); _apelidoController.dispose(); super.dispose(); } 
 
-  Future<void> _inserirPlaneta() async {
-    await _controlePlaneta.inserirPlaneta(_planeta);
-  }
+Future _inserirPlaneta() async { await _controlePlaneta.inserirPlaneta(_planeta); } 
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+void _submitForm() { if (_formKey.currentState!.validate()) { _formKey.currentState!.save(); 
 
-      _inserirPlaneta();
+ _inserirPlaneta(); 
+ 
+  ScaffoldMessenger.of(context).showSnackBar( 
+    const SnackBar(content: Text('Dados do planeta salvos com sucesso!')), 
+  ); 
+  Navigator.of(context).pop(); 
+  widget.onFinalizado(); 
+} 
+  
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados do planeta salvos com sucesso!')),
-      );
-      Navigator.of(context).pop();
-      widget.onFinalizado();
-    }
-  }
+} 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Cadastrar Planeta'),
-        elevation: 3,
-        backgroundColor: const Color.fromARGB(255, 255, 159, 226),
-      ),
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar( centerTitle: true, title: const Text('Cadastrar Planeta'), elevation: 3, backgroundColor: const Color.fromARGB(255, 255, 159, 226), ), 
 
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _nomeController,
-                  decoration: const InputDecoration(labelText: 'Nome'),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) {
-                    if (value == null || value.isEmpty || value.length < 3) {
-                      return 'Por favor, informe o nome do planeta (3 ou mais caracteres)';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _planeta.nome = value!;
-                  },
-                ),
-                TextFormField(
-                  controller: _tamanhoController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tamanho (em km)',
-                  ),
-                  keyboardType: TextInputType.number,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, informe o tamanho do planeta';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Por favor, informe um valor numérico válido';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _planeta.tamanho = double.parse(value!);
-                  },
-                ),
-                TextFormField(
-                  controller: _distanciaController,
-                  decoration: const InputDecoration(
-                    labelText: 'Distância (em km)',
-                  ),
-                  keyboardType: TextInputType.number,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, informe a distância do planeta';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Por favor, informe um valor numérico válido';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _planeta.distancia = double.parse(value!);
-                  },
-                ),
-                TextFormField(
-                  controller: _apelidoController,
-                  decoration: const InputDecoration(labelText: 'Apelido'),
-                  onSaved: (value) {
-                    _planeta.apelido = value;
-                  },
-                ),
+ body: Padding( 
+    padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0), 
+    child: Form( 
+      key: _formKey, 
+      child: SingleChildScrollView( 
+        child: Column( 
+          children: [ 
+            TextFormField( 
+              controller: _nomeController, 
+              decoration: const InputDecoration(labelText: 'Nome'), 
+              autovalidateMode: AutovalidateMode.onUserInteraction, 
+              validator: (value) { 
+                if (value == null || value.isEmpty || value.length < 3) { 
+                  return 'Por favor, informe o nome do planeta (3 ou mais caracteres)'; 
+                } 
+                return null; 
+              }, 
+              onSaved: (value) { 
+                _planeta.nome = value!; 
+              }, 
+            ), 
+            TextFormField( 
+              controller: _tamanhoController, 
+              decoration: const InputDecoration( 
+                labelText: 'Tamanho (em km)', 
+              ), 
+              keyboardType: TextInputType.number, 
+              autovalidateMode: AutovalidateMode.onUserInteraction, 
+              validator: (value) { 
+                if (value == null || value.isEmpty) { 
+                  return 'Por favor, informe o tamanho do planeta'; 
+                } 
+                if (double.tryParse(value) == null) { 
+                  return 'Por favor, informe um valor numérico válido'; 
+                } 
+                return null; 
+              }, 
+              onSaved: (value) { 
+                _planeta.tamanho = double.parse(value!); 
+              }, 
+            ), 
+            TextFormField( 
+              controller: _distanciaController, 
+              decoration: const InputDecoration( 
+                labelText: 'Distância (em km)', 
+              ), 
+              keyboardType: TextInputType.number, 
+              autovalidateMode: AutovalidateMode.onUserInteraction, 
+              validator: (value) { 
+                if (value == null || value.isEmpty) { 
+                  return 'Por favor, informe a distância do planeta'; 
+                } 
+                if (double.tryParse(value) == null) { 
+                  return 'Por favor, informe um valor numérico válido'; 
+                } 
+                return null; 
+              }, 
+              onSaved: (value) { 
+                _planeta.distancia = double.parse(value!); 
+              }, 
+            ), 
+            TextFormField( 
+              controller: _apelidoController, 
+              decoration: const InputDecoration(labelText: 'Apelido'), 
+              onSaved: (value) { 
+                _planeta.apelido = value; 
+              }, 
+            ), 
+ 
+            const SizedBox(height: 20.0), 
+            ElevatedButton( 
+              onPressed: _submitForm, //_submitForm, 
+              child: Text('Salvar'), 
+            ), 
+          ], 
+        ), 
+      ), 
+    ), 
+  ), 
+); 
+  
 
-                const SizedBox(height: 20.0),
-                ElevatedButton(
-                  onPressed: _submitForm, //_submitForm,
-                  child: Text('Salvar'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+} } 
 
-planeta.dart
+planeta.dart 
 
+class Planeta { int? id; String nome; double tamanho; double distancia; String? apelido; 
 
-class Planeta {
-  int? id;
-  String nome;
-  double tamanho;
-  double distancia;
-  String? apelido;
+// Construtor da classe Planeta Planeta({ this.id, required this.nome, required this.tamanho, required this.distancia, this.apelido, }); 
 
-// Construtor da classe Planeta
-  Planeta({
-    this.id,
-    required this.nome,
-    required this.tamanho,
-    required this.distancia,
-    this.apelido,
-  });
+//Construtor alternativo Planeta.vazio() : nome = '', tamanho = 0.0, distancia = 0.0, apelido = ''; 
 
-//Construtor alternativo
-  Planeta.vazio()
-      : nome = '',
-        tamanho = 0.0,
-        distancia = 0.0,
-        apelido = '';
+factory Planeta.fromMap(Map<String, dynamic> map) { return Planeta ( id: map['id'], nome: map['nome'], tamanho: map['tamanho'], distancia: map['distancia'], apelido: map['apelido'], ); } 
 
-factory Planeta.fromMap(Map<String, dynamic> map) {
-    return Planeta (
-      id: map['id'],
-      nome: map['nome'],
-      tamanho: map['tamanho'],
-      distancia: map['distancia'],
-      apelido: map['apelido'],
-    );
-  }
+Map<String, dynamic> toMap() { 
+return { 
+  'id': id, 
+  'nome': nome, 
+  'tamanho': tamanho, 
+  'distancia': distancia, 
+  'apelido': apelido, 
+}; 
+  
 
-    Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'nome': nome,
-      'tamanho': tamanho,
-      'distancia': distancia,
-      'apelido': apelido,
-    };
-  }
-}
-controle_planeta
+} } controle_planeta 
 
-import 'package:myapp/modelos/planeta.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:myapp/modelos/planeta.dart'; import 'package:path/path.dart'; import 'package:sqflite/sqflite.dart'; 
 
-class ControlePlaneta {
-  static Database? _bd;
+class ControlePlaneta { static Database? _bd; 
 
-  Future<Database> get bd async {
-    if (_bd == null) return _bd!;
-    _bd = await _initBD('planetas.db');
-    return _bd!;
-  }
+Future get bd async { if (_bd == null) return _bd!; _bd = await _initBD('planetas.db'); return _bd!; } 
 
-  Future<Database> _initBD(String localArquivo) async {
-    final caminhoBD = await getDatabasesPath();
-    final caminho = join(caminhoBD, localArquivo);
-    return await openDatabase(caminho, version: 1, onCreate: _criarBD);
-  }
+Future _initBD(String localArquivo) async { final caminhoBD = await getDatabasesPath(); final caminho = join(caminhoBD, localArquivo); return await openDatabase(caminho, version: 1, onCreate: _criarBD); } 
 
-  Future<void> _criarBD(Database bd, int versao) async {
-    const sql = '''
-      CREATE TABLE planetas(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        tamanho REAL NOT NULL,
-        distancia REAL NOT NULL,
-        apelido TEXT
-      );
-    ''';
-    await bd.execute(sql);
-  }
+Future _criarBD(Database bd, int versao) async { const sql = ''' CREATE TABLE planetas( id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, tamanho REAL NOT NULL, distancia REAL NOT NULL, apelido TEXT ); '''; await bd.execute(sql); } 
 
-  Future<List<Planeta>> lerPlanetas() async {
-    final db = await bd;
-    final resultado = await db.query('planetas');
-    return resultado.map((item) => Planeta.fromMap(item)).toList();
-  }
+Future<List> lerPlanetas() async { final db = await bd; final resultado = await db.query('planetas'); return resultado.map((item) => Planeta.fromMap(item)).toList(); } 
 
-  Future<int> inserirPlaneta(Planeta planeta) async {
-    final db = await bd;
-    return await db.insert('planetas', planeta.toMap());
-  }
-}
+Future inserirPlaneta(Planeta planeta) async { final db = await bd; return await db.insert('planetas', planeta.toMap()); } } 
+
+ 
