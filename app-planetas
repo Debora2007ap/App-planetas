@@ -35,9 +35,8 @@ void _incluirPlaneta(BuildContext context) { Navigator.push( context, MaterialPa
     child: const Icon(Icons.add), 
   ), 
 ); 
-  
-
-} } 
+} 
+} 
 
 tela_planeta 
 
@@ -73,8 +72,6 @@ void _submitForm() { if (_formKey.currentState!.validate()) { _formKey.currentSt
   Navigator.of(context).pop(); 
   widget.onFinalizado(); 
 } 
-  
-
 } 
 
 @override Widget build(BuildContext context) { return Scaffold( appBar: AppBar( centerTitle: true, title: const Text('Cadastrar Planeta'), elevation: 3, backgroundColor: const Color.fromARGB(255, 255, 159, 226), ), 
@@ -152,15 +149,16 @@ void _submitForm() { if (_formKey.currentState!.validate()) { _formKey.currentSt
             ElevatedButton( 
               onPressed: _submitForm, //_submitForm, 
               child: Text('Salvar'), 
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+            ), 
+          ], 
+        ), 
+      ), 
+    ), 
+  ), 
+); 
 } 
+ } 
+
 planeta.dart 
 
 class Planeta { int? id; String nome; double tamanho; double distancia; String? apelido; 
@@ -179,9 +177,10 @@ return {
   'distancia': distancia, 
   'apelido': apelido, 
 }; 
+}  
 } 
-} 
-controle_planeta 
+
+ controle_planeta 
 
 import 'package:myapp/modelos/planeta.dart'; import 'package:path/path.dart'; import 'package:sqflite/sqflite.dart'; 
 
