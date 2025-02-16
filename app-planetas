@@ -159,8 +159,9 @@ void _submitForm() { if (_formKey.currentState!.validate()) { _formKey.currentSt
     ), 
   ), 
 ); 
-}
 } 
+}
+
 planeta.dart 
 
 class Planeta { int? id; String nome; double tamanho; double distancia; String? apelido; 
