@@ -1,22 +1,16 @@
 main.dart
-
 // ignore: unused_import
 import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:myapp/controles/controle_planeta.dart';
 import 'package:myapp/telas/tela_planeta.dart';
-
 // ignore: unused_import
 import 'modelos/planeta.dart';
-
 void main() {
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -32,33 +26,26 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-
 class _MyHomePageState extends State<MyHomePage> {
   final ControlePlaneta _controlePlaneta = ControlePlaneta();
   List<Planeta> _planetas = [];
-
   @override
   void initState() {
     super.initState();
     _lerPlanetas();
   }
-
   Future<void> _lerPlanetas() async {
     final resultado = await _controlePlaneta.lerPlanetas();
     setState(() {
       _planetas = resultado;
     });
   }
-
   void _incluirPlaneta(BuildContext context) {
     Navigator.push(
       context,
@@ -72,7 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +76,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _incluirPlaneta(context);
@@ -99,35 +84,24 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
 tela_planeta
-
-
 import 'package:flutter/material.dart';
 import '../controles/controle_planeta.dart';
 import '../modelos/planeta.dart';
-
 class TelaPlaneta extends StatefulWidget {
   final Function() onFinalizado;
-
   const TelaPlaneta({super.key, required this.onFinalizado});
-
   @override
   State<TelaPlaneta> createState() => _TelaPlanetaState();
 }
-
 class _TelaPlanetaState extends State<TelaPlaneta> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _tamanhoController = TextEditingController();
   final TextEditingController _distanciaController = TextEditingController();
   final TextEditingController _apelidoController = TextEditingController();
-
   final ControlePlaneta _controlePlaneta = ControlePlaneta();
-
   final Planeta _planeta = Planeta.vazio();
-
   @override
   void initState() {
     //_nomeController.text = 'Terra nova';
@@ -136,7 +110,6 @@ class _TelaPlanetaState extends State<TelaPlaneta> {
     //_apelidoController.text = 'Terra nova';
     super.initState();
   }
-
   @override
   void dispose() {
     _nomeController.dispose();
@@ -145,17 +118,13 @@ class _TelaPlanetaState extends State<TelaPlaneta> {
     _apelidoController.dispose();
     super.dispose();
   }
-
   Future<void> _inserirPlaneta() async {
     await _controlePlaneta.inserirPlaneta(_planeta);
   }
-
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-
       _inserirPlaneta();
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Dados do planeta salvos com sucesso!')),
       );
@@ -163,7 +132,6 @@ class _TelaPlanetaState extends State<TelaPlaneta> {
       widget.onFinalizado();
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,7 +141,6 @@ class _TelaPlanetaState extends State<TelaPlaneta> {
         elevation: 3,
         backgroundColor: const Color.fromARGB(255, 255, 159, 226),
       ),
-
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
         child: Form(
@@ -242,7 +209,6 @@ class _TelaPlanetaState extends State<TelaPlaneta> {
                     _planeta.apelido = value;
                   },
                 ),
-
                 const SizedBox(height: 20.0),
                 ElevatedButton(
                   onPressed: _submitForm, //_submitForm,
@@ -257,15 +223,12 @@ class _TelaPlanetaState extends State<TelaPlaneta> {
   }
 }
 planeta.dart
-
-
 class Planeta {
   int? id;
   String nome;
   double tamanho;
   double distancia;
   String? apelido;
-
 // Construtor da classe Planeta
   Planeta({
     this.id,
@@ -274,14 +237,12 @@ class Planeta {
     required this.distancia,
     this.apelido,
   });
-
 //Construtor alternativo
   Planeta.vazio()
       : nome = '',
         tamanho = 0.0,
         distancia = 0.0,
         apelido = '';
-
 factory Planeta.fromMap(Map<String, dynamic> map) {
     return Planeta (
       id: map['id'],
@@ -291,7 +252,6 @@ factory Planeta.fromMap(Map<String, dynamic> map) {
       apelido: map['apelido'],
     );
   }
-
     Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -303,26 +263,21 @@ factory Planeta.fromMap(Map<String, dynamic> map) {
   }
 }
 controle_planeta
-
 import 'package:myapp/modelos/planeta.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-
 class ControlePlaneta {
   static Database? _bd;
-
   Future<Database> get bd async {
     if (_bd == null) return _bd!;
     _bd = await _initBD('planetas.db');
     return _bd!;
   }
-
   Future<Database> _initBD(String localArquivo) async {
     final caminhoBD = await getDatabasesPath();
     final caminho = join(caminhoBD, localArquivo);
     return await openDatabase(caminho, version: 1, onCreate: _criarBD);
   }
-
   Future<void> _criarBD(Database bd, int versao) async {
     const sql = '''
       CREATE TABLE planetas(
@@ -335,13 +290,11 @@ class ControlePlaneta {
     ''';
     await bd.execute(sql);
   }
-
   Future<List<Planeta>> lerPlanetas() async {
     final db = await bd;
     final resultado = await db.query('planetas');
     return resultado.map((item) => Planeta.fromMap(item)).toList();
   }
-
   Future<int> inserirPlaneta(Planeta planeta) async {
     final db = await bd;
     return await db.insert('planetas', planeta.toMap());
